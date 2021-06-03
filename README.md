@@ -1,2 +1,2 @@
-# mac-changer
+# Mac-Changer
 A simple MAC changer.
