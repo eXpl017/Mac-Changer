@@ -21,6 +21,14 @@ def get_arguments():
 
 	return args
 
+def check_interface(interface):
+	process = subprocess.run(['ifconfig','-a'],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+	matching = re.findall(r'(.*): flags', process.stdout)
+	#print(matching)
+	if interface not in matching:
+		print("Enter a valid interface...exiting!")
+		exit()
+
 def change_mac(interface, new_mac):
 	subprocess.run(['ifconfig',interface,'down'])
 	subprocess.run(['ifconfig',interface, 'hw', 'ether', new_mac])
@@ -40,8 +48,9 @@ def check_mac(args):
 	before = find_mac(args.interface)
 	change_mac(args.interface,args.new_mac)
 	after = find_mac(args.interface)
-	print(before + '-->' + after)
+	print(before + ' ==> ' + after)
 
 
 args = get_arguments()
+check_interface(args.interface)
 check_mac(args)
