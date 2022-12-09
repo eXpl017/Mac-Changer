@@ -1,0 +1,47 @@
+#!/usr/bin/python3.8
+
+import subprocess
+import argparse
+import re
+
+def get_arguments():
+	parser = argparse.ArgumentParser(description='Simple MAC address changer')
+
+	parser.add_argument('-i','--interface',dest='interface',help='Interface to change MAC address')
+	parser.add_argument('-m','--mac',dest='new_mac',help='New MAC address')
+
+	args = parser.parse_args()
+
+	if not args.interface and not args.new_mac:
+		parser.error('Please enter interface and MAC!')
+	elif not args.interface:
+		parser.error('Please enter the interface!')
+	elif not args.new_mac:
+		parser.error('Please enter the new MAC address!')
+
+	return args
+
+def change_mac(interface, new_mac):
+	subprocess.run(['ifconfig',interface,'down'])
+	subprocess.run(['ifconfig',interface, 'hw', 'ether', new_mac])
+	subprocess.run(['ifconfig',interface, 'up'])
+
+def find_mac(interface):
+	process = subprocess.run(['ifconfig',interface],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+	matching = re.search(r'\w\w:\w\w:\w\w:\w\w:\w\w:\w\w', process.stdout)
+
+	if matching:
+		return str(matching[0])
+	else:
+		print("Couldn't find MAC...exiting!")
+		exit()
+
+def check_mac(args):
+	before = find_mac(args.interface)
+	change_mac(args.interface,args.new_mac)
+	after = find_mac(args.interface)
+	print(before + '-->' + after)
+
+
+args = get_arguments()
+check_mac(args)
